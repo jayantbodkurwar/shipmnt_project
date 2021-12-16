@@ -7,6 +7,10 @@ parameters:
     name: Answer_id
     type: string
     required: true
+  - in: header
+    name: Parameter
+    type: string
+    required: true
 responses:
   200:
     description: Success

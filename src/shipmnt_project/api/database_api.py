@@ -77,15 +77,33 @@ class DatabaseApi:
             self.LOG.exception(ex)
             return json.dumps(versions)      
 
-    def upvote(self):
+    def vote(self, parameter, answer_id):
         versions = []
+        import pdb;
+        pdb.set_trace()
         try:
-            versions = self.db_obj.session.query(Answers) \
-                .all()
+            if parameter == 'upvote':
+                vote = self.db_obj.session.query(Answers.upvote) \
+                    .filter_by(answer_id=answer_id) \
+                    .all()
+            elif parameter == 'downvote':
+                vote = self.db_obj.session.query(Answers.downvote) \
+                    .filter_by(answer_id=answer_id) \
+                    .all()                
+            value = vote[0][0]
+            if value is None:
+                value = 1
+            else:
+                value = int(value) + 1
+            if parameter == 'upvote':
+                version=self.db_obj.session.query(Answers).filter_by(answer_id=answer_id).update(dict(upvote=value))
+            elif  parameter == 'downvote':
+                version=self.db_obj.session.query(Answers).filter_by(answer_id=answer_id).update(dict(downvote=value))
+            self.db_obj.session.commit()
             return json.dumps([version.as_dict() for version in versions])
         except Exception as ex:
             self.LOG.exception(ex)
-            return json.dumps(versions) 
+            return json.dumps(versions)
 
     def fetch_questions_by_userid(self, value):
         versions = []
