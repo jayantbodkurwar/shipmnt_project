@@ -126,8 +126,7 @@ def post_answers():
     """
     API to post answers
     """
-    import pdb;
-    pdb.set_trace()
+
     try:
         user_id = request.headers.get("X-Auth-Userid")
         user_name = request.headers.get("X-Auth-Username")
@@ -144,7 +143,7 @@ def post_answers():
         current_app.logger.exception(ex)
         return Response(ex.args[0], status=500)
 
-@shipmnt_project.route("/v2/upvote_answer", methods=["POST"])
+@shipmnt_project.route("/v2/vote_answer", methods=["POST"])
 @swag_from("swags/upvote_answer.yaml")
 def upvote_answers():
     """
@@ -160,21 +159,6 @@ def upvote_answers():
         current_app.logger.exception(ex)
         return Response(ex.args[0], status=500)
 
-@shipmnt_project.route("/v2/downvote_answer", methods=["POST"])
-@swag_from("swags/downvote_answer.yaml")
-def downvote_answers():
-    """
-    API to downvote answers
-    """
-    try:
-        answer_id = request.headers.get("Answer_id")
-        parameter = request.headers.get("Parameter")
-
-        id = DB_API.vote(parameter, answer_id)
-        return Response("Successfully downvoted an Answer", status=201)
-    except Exception as ex:
-        current_app.logger.exception(ex)
-        return Response(ex.args[0], status=500)
 
 @shipmnt_project.route("/v2/question", methods=["GET"])
 @swag_from("swags/get_question.yaml")

@@ -51,8 +51,7 @@ class DatabaseApi:
             raise ValueError("Failed saving entry in database")
 
     def post_answer(self, user_id, user_name, question_body, answer):
-        import pdb;
-        pdb.set_trace()
+
         try:
             answer = Answers(
                 user_id=user_id,
@@ -79,8 +78,7 @@ class DatabaseApi:
 
     def vote(self, parameter, answer_id):
         versions = []
-        import pdb;
-        pdb.set_trace()
+
         try:
             if parameter == 'upvote':
                 vote = self.db_obj.session.query(Answers.upvote) \

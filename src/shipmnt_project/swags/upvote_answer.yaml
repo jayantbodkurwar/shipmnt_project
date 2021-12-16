@@ -1,4 +1,4 @@
-API to Upvote an Answer
+API to Upvote/Downvote an Answer
 ---
 tags:
   - Shipmnt API's
@@ -9,6 +9,7 @@ parameters:
     required: true
   - in: header
     name: Parameter
+    description: upvote/downvote
     type: string
     required: true
 responses:
