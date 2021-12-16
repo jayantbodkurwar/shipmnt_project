@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  name: shipmnt-project
+  namespace: ${APP_NAMESPACE}
+spec:
+  rules:
+  - host: ${DNS_HOST}
+    http:
+      paths:
+      - backend:
+          serviceName: shipmnt-project
+          servicePort: 9000
+        path: /vcs/api

@@ -1,0 +1,30 @@
+API to Post an Answer
+---
+tags:
+  - Shipmnt API's
+parameters:
+  - in: header
+    name: X-Auth-Userid
+    type: string
+    required: true
+  - in: header
+    name: X-Auth-Username
+    type: string
+    required: true
+  - in: header
+    name: Question
+    type: string
+    required: true
+  - in: body
+    name: Answer
+    type: string
+    required: true
+responses:
+  200:
+    description: Success
+  400:
+    description: Bad request
+  401:
+    description: Forbidden
+  500:
+    description: Error

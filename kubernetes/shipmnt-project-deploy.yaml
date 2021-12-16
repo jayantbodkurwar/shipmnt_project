@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipmnt-project
+  namespace: ${APP_NAMESPACE}
+  labels:
+    app: shipmnt-project
+    component: shipmnt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shipmnt-project
+  template:
+    metadata:
+      labels:
+        app: shipmnt-project
+        component: shipmnt
+    spec:
+      imagePullSecrets:
+      - name: gitlab
+      volumes:
+      - name: secrets
+        emptyDir: { }
+      serviceAccount: ${SERVICE_ACCOUNT}
+      serviceAccountName: ${SERVICE_ACCOUNT}
+      containers:
+        - name: shipmnt-project
+          resources:
+            requests:
+              memory: "50Mi"
+              cpu: "50m"
+            limits:
+              memory: "1000Mi"
+              cpu: "1"
+          image: ${IMAGE_NAME_shipmnt_project}
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: secrets
+              mountPath: /app/shipmnt_project/configs/
+          ports:
+            - name: http
+              containerPort: 9000
+          livenessProbe:
+            httpGet:
+              path: /vcs/api/healthz
+              port: 9000
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /vcs/api/healthz
+              port: 9000
+            initialDelaySeconds: 60
+            periodSeconds: 15
+

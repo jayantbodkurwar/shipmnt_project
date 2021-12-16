@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shipmnt-project-configmap
+  namespace: ${APP_NAMESPACE}
+  labels:
+    app: shipmnt-project
+    component: shipmnt
+data:
+  local.cfg: |
+    #! -*- coding: utf-8 -*-
+    import logging
+
+    URL_PREFIX = "/vcs/api"
+    # skip auth for following URI
+    SKIP_AUTH = (
+        "/docs",
+        "/flasgger_static/",
+        "/healthz",
+        "/validate",
+    )
+    SQLALCHEMY_DATABASE_URI = "${DB_TYPE}:://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/shipmnt_project"
+    
+    

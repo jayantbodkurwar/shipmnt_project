@@ -1,0 +1,13 @@
+API to get all answers
+---
+tags:
+  - Shipmnt API's
+responses:
+  200:
+    description: Success
+  400:
+    description: Bad request
+  401:
+    description: Forbidden
+  500:
+    description: Error

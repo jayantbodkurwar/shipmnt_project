@@ -1,0 +1,24 @@
+API to fetch Question
+---
+tags:
+  - Shipmnt API's
+parameters:
+  - in: header
+    name: Parameter
+    type: string
+    description: Parameter to filter(user_id/user_name/question_title/tags)
+    required: true   
+  - in: header
+    name: Value
+    type: string
+    description: Value of the parameter
+    required: true
+responses:
+  200:
+    description: Success
+  400:
+    description: Bad request
+  401:
+    description: Forbidden
+  500:
+    description: Error

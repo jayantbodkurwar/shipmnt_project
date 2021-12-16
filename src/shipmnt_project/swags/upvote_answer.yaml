@@ -1,0 +1,18 @@
+API to Upvote an Answer
+---
+tags:
+  - Shipmnt API's
+parameters:
+  - in: header
+    name: Answer_id
+    type: string
+    required: true
+responses:
+  200:
+    description: Success
+  400:
+    description: Bad request
+  401:
+    description: Forbidden
+  500:
+    description: Error
