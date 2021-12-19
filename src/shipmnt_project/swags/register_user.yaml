@@ -1,22 +1,14 @@
-API to Post an Answer
+API to Register a user
 ---
 tags:
   - Shipmnt API's
 parameters:
   - in: header
-    name: X-Auth-Userid
-    type: string
-    required: true
-  - in: header
     name: X-Auth-Username
     type: string
     required: true
-  - in: header
-    name: Question_Id
-    type: string
-    required: true
-  - in: body
-    name: Answer
+  - in: query
+    name: Password
     type: string
     required: true
 responses:

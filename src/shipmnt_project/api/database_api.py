@@ -1,11 +1,17 @@
 import json
 import logging
-
 from flask_sqlalchemy import SQLAlchemy
 
 from .models import db as version_db
 from .models import Version as Version
 from .models import Answers as Answers
+from .models import Users as Users
+import ast
+import jwt
+from uuid import uuid4
+from werkzeug.security import check_password_hash
+import datetime
+from flask import jsonify
 
 
 class DatabaseApi:
@@ -18,6 +24,33 @@ class DatabaseApi:
         version_db.init_app(app)
         self.db_obj = SQLAlchemy(app)
         self.app = app
+
+
+    def register_user(self, user_name, hashed_password):
+
+        try:
+            user = self.db_obj.session.query(Users).filter_by(user_name=user_name).first()
+            if user:
+                return("User already exist")
+            new_user = Users(public_id=str(uuid4()), user_name=user_name, password=hashed_password)
+            self.db_obj.session.add(new_user) 
+            self.db_obj.session.commit()
+            return("Successfully registered a user")
+        except Exception as ex:
+            self.LOG.exception(ex)
+            raise ValueError("Failed saving entry in database")
+
+    def validate_user(self, user_name, password):
+        try:
+            user = self.db_obj.session.query(Users).filter_by(user_name=user_name).first()
+
+            if check_password_hash(user.password, password):
+                token = jwt.encode({'public_id' : user.public_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, 'GkeE6mK7CBt4EUS03Zl0HgMcnEQ/RL+MnqksukdjbS2JJxXY3wgvl+Naldk5yLJ/SHyWmHugQ', "HS256")
+            
+            return('token for the logged in user: ' +token.decode("utf-8"))
+        except Exception as ex:
+            self.LOG.exception(ex)
+            raise ValueError("Could not verify, Authentication failed")
 
     def create_new_questios_recor(self,
                                   user_id,
@@ -36,6 +69,11 @@ class DatabaseApi:
         
         
         try:
+            #check if question is already posted
+            result = DatabaseApi.check_if_question_exist(self, question_body)
+            res = json.loads(result)
+            if res:
+                return("Question already exist, posted by ",res[0]['user_id'] ," with question_id ", res[0]['id'])
             version = Version(
                 user_id=user_id,
                 user_name=user_name,
@@ -45,23 +83,39 @@ class DatabaseApi:
             self.db_obj.session.add(version)
             self.db_obj.session.flush()
             self.db_obj.session.commit()
-            return version
+            return("Successfully posted a question")
         except Exception as ex:
             self.LOG.exception(ex)
             raise ValueError("Failed saving entry in database")
 
-    def post_answer(self, user_id, user_name, question_body, answer):
-
+    def check_if_question_exist(self, value):
+        versions = []
         try:
-            answer = Answers(
-                user_id=user_id,
-                user_name=user_name,
-                question_body=question_body,
-                answer=answer)
-            self.db_obj.session.add(answer)
-            self.db_obj.session.flush()
-            self.db_obj.session.commit()
-            return answer
+            versions = self.db_obj.session.query(Version) \
+                .filter_by(question_body=value) \
+                .all()
+            return json.dumps([version.as_dict() for version in versions])
+        except Exception as ex:
+            self.LOG.exception(ex)
+            return json.dumps(versions)        
+
+    def post_answer(self, user_id, user_name, question_id, answer):
+        try:
+            result = DatabaseApi.fetch_questions_by_questionid(self, question_id)
+            res = ast.literal_eval(result)
+            if res:  
+                answer = Answers(
+                    question_id=question_id,
+                    user_id=user_id,
+                    user_name=user_name,
+                    question_body=res[0]['question_body'],
+                    answer=answer)
+                self.db_obj.session.add(answer)
+                self.db_obj.session.flush()
+                self.db_obj.session.commit()
+                return("Successfully posted an Answer")
+            else:
+               return("Incorrect Question_Id, No such question exists") 
         except Exception as ex:
             self.LOG.exception(ex)
             raise ValueError("Failed saving entry in database")
@@ -182,9 +236,9 @@ class DatabaseApi:
             res = json.loads(deleted)
             if res['user_id'] == user_id:
                 res[parameter] = value
-                DatabaseApi.create_new_questios_recor(self,user_id=res['user_id'], user_name=res['user_name'], question_title=res['question_title'], question_body=res['question_body'], question_tags=res['tags'])
                 self.db_obj.session.query(Version).filter_by(id=question_id).delete()
                 self.db_obj.session.commit()
+                DatabaseApi.create_new_questios_recor(self,user_id=res['user_id'], user_name=res['user_name'], question_title=res['question_title'], question_body=res['question_body'], question_tags=res['tags'])
                 return("Successfully Updated the question")
             else:
                 return("You dont have the access to update this entry")

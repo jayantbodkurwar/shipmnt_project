@@ -10,13 +10,13 @@ import json
 
 from urllib.parse import urlparse
 from flasgger import Swagger
-
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, Response, jsonify, request, g, Blueprint, current_app
 from flasgger import swag_from
 
 from .api.database_api import DatabaseApi as DatabaseApi
 from .api.models import Version as Version
-
+from .api.models import token_required
 app = Flask(__name__)
 
 # initialize settings
@@ -97,8 +97,9 @@ def pong():
     return Response("pong")
 
 @shipmnt_project.route("/v2/question", methods=["POST"])
+@token_required
 @swag_from("swags/post_question.yaml")
-def post_questions():
+def post_questions(current_user):
     """
     API to post new questions
     """
@@ -115,7 +116,7 @@ def post_questions():
             question_title=question_title,
             question_body=question_body,
             question_tags=question_tags)
-        return Response("Successfully posted the Question", status=201)
+        return Response(question_id, status=201)
     except Exception as ex:
         current_app.logger.exception(ex)
         return Response(ex.args[0], status=500)
@@ -130,15 +131,15 @@ def post_answers():
     try:
         user_id = request.headers.get("X-Auth-Userid")
         user_name = request.headers.get("X-Auth-Username")
-        question_body = request.headers.get("Question")
+        question_id = request.headers.get("Question_Id")
         answer = request.get_json()
 
-        question_id = DB_API.post_answer(
+        id = DB_API.post_answer(
             user_id=user_id,
             user_name=user_name,
-            question_body=question_body,
+            question_id=question_id,
             answer=answer)
-        return Response("Successfully posted an Answer", status=201)
+        return Response(id, status=201)
     except Exception as ex:
         current_app.logger.exception(ex)
         return Response(ex.args[0], status=500)
@@ -222,5 +223,20 @@ def update_questions():
     except Exception as ex:
         current_app.logger.exception(ex)
         return Response(ex.args[0], status=500)
+
+@shipmnt_project.route("/v2/register", methods=["POST"])
+@swag_from("swags/register_user.yaml")
+def signup_user():
+    hashed_password = generate_password_hash(request.args.get('Password'), method='sha256')
+    
+    new_user = DB_API.register_user(request.headers.get("X-Auth-Username"), hashed_password)  
+    return Response(new_user)
+
+@shipmnt_project.route("/v2/login", methods=["POST"])
+@swag_from("swags/login_user.yaml")
+def login_user():
+    user = DB_API.validate_user(request.headers.get("X-Auth-Username"), request.headers.get("Password"))
+    return Response(user)
+
 
 app.register_blueprint(shipmnt_project, url_prefix=url_prefix)

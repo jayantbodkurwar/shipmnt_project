@@ -1,31 +1,16 @@
-API to Post a Question
+API to Login a user
 ---
 tags:
   - Shipmnt API's
 parameters:
   - in: header
-    name: X-Auth-Userid
-    type: string
-    required: true
-  - in: header
     name: X-Auth-Username
     type: string
     required: true
   - in: header
-    name: X-ACCESS-TOKEN
+    name: Password
     type: string
     required: true
-  - in: header
-    name: Title
-    type: string
-    required: true
-  - in: header
-    name: Question
-    type: string
-    required: true
-  - in: header
-    name: tags
-    type: string
 responses:
   200:
     description: Success

@@ -28,6 +28,7 @@ setup(
         "psycopg2-binary",
         "SQLAlchemy==1.3.22",
         "alembic==1.0.11",
+        "pyjwt==1.7.1",
         "PyYAML==5.4.1"
     ],
 )
