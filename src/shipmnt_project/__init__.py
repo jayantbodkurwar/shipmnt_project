@@ -151,11 +151,12 @@ def upvote_answers():
     API to upvote answers
     """
     try:
+        user_id = request.headers.get("X-Auth-Userid")
         answer_id = request.headers.get("Answer_id")
         parameter = request.headers.get("Parameter")
 
-        id = DB_API.vote(parameter, answer_id)
-        return Response("Successfully upvoted an Answer", status=201)
+        id = DB_API.vote(user_id, parameter, answer_id)
+        return Response(id, status=201)
     except Exception as ex:
         current_app.logger.exception(ex)
         return Response(ex.args[0], status=500)

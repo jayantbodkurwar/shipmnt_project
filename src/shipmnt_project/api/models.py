@@ -38,6 +38,19 @@ class Answers(db.Model):
         """ Dict representation """
         return {c.name: str(getattr(self, c.name)) if isinstance(getattr(self, c.name), datetime.datetime) else getattr(self, c.name) for c in self.__table__.columns}
 
+class Voting(db.Model):
+    __tablename__ = "vote_answers"
+    id = db.Column(db.String(60), primary_key=True, default=str(uuid4()))
+    answer_id = db.Column(db.String(60), unique=False, nullable=False)
+    user_id = db.Column(db.String(255), unique=False, nullable=False)
+    upvote = db.Column(db.Integer, unique=False, nullable=True)
+    downvote = db.Column(db.Integer, unique=False, nullable=True)
+
+    def as_dict(self):
+        """ Dict representation """
+        return {c.name: str(getattr(self, c.name)) if isinstance(getattr(self, c.name), datetime.datetime) else getattr(self, c.name) for c in self.__table__.columns}
+
+
 class Users(db.Model):
     __tablename__ = "users"
     id = db.Column(db.String(60), primary_key=True, default=str(uuid4()))

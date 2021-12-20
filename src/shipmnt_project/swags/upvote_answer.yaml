@@ -4,6 +4,10 @@ tags:
   - Shipmnt API's
 parameters:
   - in: header
+    name: X-Auth-Userid
+    type: string
+    required: true
+  - in: header
     name: Answer_id
     type: string
     required: true

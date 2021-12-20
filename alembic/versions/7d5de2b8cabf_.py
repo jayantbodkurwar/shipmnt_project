@@ -32,6 +32,15 @@ def upgrade():
     sa.PrimaryKeyConstraint('answer_id')
     )
 
+    op.create_table('vote_answers',
+    sa.Column('id', sa.String(length=60), nullable=False),
+    sa.Column('answer_id', sa.String(length=60), unique=False, nullable=False),  
+    sa.Column('user_id', sa.String(length=255), unique=False, nullable=False),
+    sa.Column('upvote', sa.Integer, nullable=True),
+    sa.Column('downvote', sa.Integer, nullable=True),
+    sa.PrimaryKeyConstraint('answer_id')
+    )
+
     op.create_table('users',
     sa.Column('id', sa.String(length=60), nullable=False),
     sa.Column('public_id', sa.String(length=60)),  
@@ -43,5 +52,6 @@ def upgrade():
 def downgrade():
     op.drop_table('question_details')
     op.drop_table('question_answers')
+    op.drop_table('vote_answers')
     op.drop_table('users')
 

@@ -6,6 +6,7 @@ from .models import db as version_db
 from .models import Version as Version
 from .models import Answers as Answers
 from .models import Users as Users
+from .models import Voting as Voting
 import ast
 import jwt
 from uuid import uuid4
@@ -130,18 +131,49 @@ class DatabaseApi:
             self.LOG.exception(ex)
             return json.dumps(versions)      
 
-    def vote(self, parameter, answer_id):
+    def vote(self, user_id, parameter, answer_id):
         versions = []
 
         try:
+            upside = self.db_obj.session.query(Voting.upvote).filter_by(user_id=user_id).filter_by(answer_id=answer_id).all()
+            downside = self.db_obj.session.query(Voting.downvote).filter_by(user_id=user_id).filter_by(answer_id=answer_id).all()
             if parameter == 'upvote':
                 vote = self.db_obj.session.query(Answers.upvote) \
                     .filter_by(answer_id=answer_id) \
                     .all()
+                if len(upside)==0:
+                    upside = 1
+                    voting = Voting(answer_id=answer_id,user_id=user_id,upvote=upside,downvote=len(downside))
+                    self.db_obj.session.add(voting)
+                    self.db_obj.session.flush()
+                    self.db_obj.session.commit()
+                    return("Successfully upvote the answer")
+                elif upside[0][0]==0:
+                    upside = 1
+                    voting = self.db_obj.session.query(Voting).filter_by(user_id=user_id).filter_by(answer_id=answer_id).update(dict(upvote=upside))
+                    self.db_obj.session.commit()
+                    return("Successfully upvote the answer")
+                elif upside[0][0]==1:
+                    return("Already upvoted the answer. Cannot do it twice")
             elif parameter == 'downvote':
                 vote = self.db_obj.session.query(Answers.downvote) \
                     .filter_by(answer_id=answer_id) \
-                    .all()                
+                    .all()   
+                if len(downside)==0:
+                    downside = 1
+                    voting = Voting(answer_id=answer_id,user_id=user_id,upvote=len(upside),downvote=downside)
+                    self.db_obj.session.add(voting)
+                    self.db_obj.session.flush()
+                    self.db_obj.session.commit()  
+                    return("Successfully downvoted the answer")            
+                elif downside[0][0]==0:
+                    downside = 1
+                    voting = self.db_obj.session.query(Voting).filter_by(user_id=user_id).filter_by(answer_id=answer_id).update(dict(downvote=downside))
+                    self.db_obj.session.commit()
+                    return("Successfully downvoted the answer")
+                elif downside[0][0]==1:
+                    return("Already downvoted the answer. Cannot do it twice")
+
             value = vote[0][0]
             if value is None:
                 value = 1
